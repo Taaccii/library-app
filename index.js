@@ -18,33 +18,70 @@ function getIcon(name) {
   return svg;
 }
 
+async function getBookCover(title, author) {
+  
+  const query = encodeURIComponent(`${title} ${author}`);
+  const url = `https://openlibrary.org/search.json?q=${query}&fields=cover_i&limit=1`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
+      const coverId = data.docs[0].cover_i;
+      
+      return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+    }
+  } catch (error) {
+    console.error("Errore API:", error);
+  }
+  
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&size=400&background=1f2937&color=fafafa`;
+}
+
 
 let myLibray = [];
 
-function Book(title, author, pages, read) {
+function Book(title, author, pages, read, coverUrl) {
   this.id = crypto.randomUUID();
   this.title = title;
   this.author = author;
   this.pages = pages;
   this.read = read;
+  this.coverUrl = coverUrl;
 }
 
 function setupSidebar() {
-  document.getElementById('home').prepend(getIcon('home'));
-  document.getElementById('show-read').prepend(getIcon('check'));
-  document.getElementById('show-unread').prepend(getIcon('bookmark'));
+
+  const homeBtn = document.getElementById('home');
+  const readBtn = document.getElementById('show-read');
+  const unreadBtn = document.getElementById('show-unread');
+  
+  homeBtn.prepend(getIcon('home'));
+  readBtn.prepend(getIcon('check'));
+  unreadBtn.prepend(getIcon('bookmark'));
   document.getElementById('new-book').prepend(getIcon('add'));
+
+  homeBtn.addEventListener('click', () => filterBooks('all'));
+  readBtn.addEventListener('click', () => filterBooks('read'));
+  unreadBtn.addEventListener('click', () => filterBooks('unread'));
+
 }
 
 setupSidebar();
 
-function addBookToLibrary(title, author, pages, read) {
-  const newBook = new Book(title, author, pages, read);
+async function addBookToLibrary(title, author, pages, read) {
+  const coverUrl = await getBookCover(title, author);
+
+  const newBook = new Book(title, author, pages, read, coverUrl);
   myLibray.push(newBook);
   
   const bookContainer = document.querySelector('.main-content');
-  const newCard = createCard(newBook);
-  bookContainer.appendChild(newCard);
+  if (bookContainer) {
+    const newCard = createCard(newBook);
+    bookContainer.appendChild(newCard);
+  }
+  return newBook;
 }
 
 function createCard(book) {
@@ -54,7 +91,18 @@ function createCard(book) {
 
   const bookCover = document.createElement('div');
   bookCover.classList.add('book-cover');
-  bookCover.textContent = 'COPERTINA';
+  
+  if (book.coverUrl) {
+    const img = document.createElement('img');
+    img.src = book.coverUrl;
+    img.alt = book.title;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    bookCover.appendChild(img);
+  } else {
+    bookCover.textContent = 'NO IMAGE';
+  }
 
   const infoOverlay = document.createElement('div');
   infoOverlay.classList.add('info-overlay');
@@ -113,6 +161,27 @@ function createCard(book) {
   return bookCard;
 }
 
+function filterBooks(status) {
+  const bookContainer = document.querySelector('.main-content');
+  if (!bookContainer) return;
+
+  bookContainer.innerHTML = '';
+
+  let filteredArray;
+  if(status === 'read') {
+    filteredArray = myLibray.filter(book => book.read === true);
+  } else if (status === 'unread') {
+    filteredArray = myLibray.filter(book => book.read === false);
+  } else {
+    filteredArray = myLibray;
+  }
+
+  filteredArray.forEach(book => {
+    const newCard = createCard(book);
+    bookContainer.appendChild(newCard);
+  });
+}
+
 function displayBooks() {
   const bookContainer = document.querySelector('.main-content');
   if (!bookContainer) return;
@@ -128,7 +197,20 @@ Book.prototype.toggleRead = function() {
   this.read = !this.read;
 }
 
-myLibray.push(new Book("Harry Potter", "Rowling", 300, true));
-myLibray.push(new Book("1984", "Orwell", 328, false));
+async function init() {
 
-displayBooks();
+  const bookContainer = document.querySelector('.main-content');
+  if (bookContainer) bookContainer.innerHTML = '';
+  myLibray = [];
+
+  const initialBooks = [
+    { t: "Harry Potter and the Philosopher's Stone", a: "J.K. Rowling", p: 300, r: true },
+    { t: "1984", a: "George Orwell", p: 328, r: true },
+    { t: "Red Rising", a: "Pierce Brown", p: 382, r: true },
+    { t: "The Lord of the Rings", a: "Tolkien", p: 1200, r: false }
+  ];
+  
+  await Promise.all(initialBooks.map(b => addBookToLibrary(b.t, b.a, b.p, b.r)));
+}
+
+init();

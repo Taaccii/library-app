@@ -192,6 +192,19 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-secondary);
 }
 
+.book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: high-quality;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .info-overlay {
   position: absolute;
