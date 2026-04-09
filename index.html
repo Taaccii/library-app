@@ -37,8 +37,25 @@
 
       </div>
     </div>
-
   </div>
+
+  <dialog id="book-modal">
+    <form method="dialog" id="book-form">
+      <h2>Add New Book</h2>
+      <input type="text" id="modal-title" placeholder="Title" required>
+      <input type="text" id="modal-author" placeholder="Author" required>
+      <input type="text" id="modal-pages" placeholder="Pages" required>
+
+      <label>
+        <input type="checkbox" id="modal-read"> Have you read it?
+      </label>
+
+      <div class="modal-buttons">
+        <button type="button" id="close-modal">Cancel</button>
+        <button type="submit" id="submit-book">Add to Library</button>
+      </div>
+    </form>
+  </dialog>
 
 
   <script src="./index.js"></script>

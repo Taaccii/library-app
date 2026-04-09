@@ -127,6 +127,14 @@ h1, h2, h3, h4, h5, h6 {
   transform-origin: left;
 }
 
+.sidebar-menu button.active {
+  color: var(--accent);
+}
+
+.sidebar-menu button.active::after {
+  transform: scaleX(1);
+}
+
 .sidebar-menu button svg {
   width: 32px; 
   height: 32px;

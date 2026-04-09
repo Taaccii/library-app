@@ -53,34 +53,58 @@ function Book(title, author, pages, read, coverUrl) {
   this.coverUrl = coverUrl;
 }
 
+function setActiveButton(buttonId) {
+  const buttons = document.querySelectorAll('.sidebar-menu button');
+
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+
+    if (btn.id === buttonId) {
+      btn.classList.add('active');
+    }
+  });
+}
+
+
 function setupSidebar() {
 
   const homeBtn = document.getElementById('home');
   const readBtn = document.getElementById('show-read');
   const unreadBtn = document.getElementById('show-unread');
+  const newBookBtn = document.getElementById('new-book');
   
   homeBtn.prepend(getIcon('home'));
   readBtn.prepend(getIcon('check'));
   unreadBtn.prepend(getIcon('bookmark'));
   document.getElementById('new-book').prepend(getIcon('add'));
 
+  setActiveButton('home');
+
   homeBtn.addEventListener('click', () => {
     currentFilter = 'all';
+    setActiveButton('home');
     filterBooks();
   });
 
   readBtn.addEventListener('click', () => {
     currentFilter = 'read';
+    setActiveButton('show-read');
     filterBooks();
   });
   
   unreadBtn.addEventListener('click', () => {
     currentFilter = 'unread';
+    setActiveButton('show-unread')
     filterBooks();
   });
 
   document.getElementById('new-book').addEventListener('click', () => {
   
+  });
+
+  const modal = document.getElementById('book-modal');
+  newBookBtn.addEventListener('click', () => {
+    modal.showModal();
   });
 }
 
@@ -96,6 +120,29 @@ async function addBookToLibrary(title, author, pages, read) {
   
   return newBook;
 }
+
+const modal = document.getElementById('book-modal');
+const bookForm = document.getElementById('book-form');
+const closeModalBtn = document.getElementById('close-modal');
+
+closeModalBtn.addEventListener('click', () => {
+  modal.closest();
+  bookForm.reset();
+});
+
+bookForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('modat-title').value;
+  const author = document.getElementById('modal-author').value;
+  const page = document.getElementById('modal-pages').value;
+  const read = document.getElementById('modal-read').value;
+
+  await addBookToLibrary(title, author, pages, read);
+
+  modal.closest();
+  bookForm.reset();
+});
 
 function createCard(book) {
   const bookCard = document.createElement('div');
