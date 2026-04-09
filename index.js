@@ -98,14 +98,6 @@ function setupSidebar() {
     filterBooks();
   });
 
-  document.getElementById('new-book').addEventListener('click', () => {
-  
-  });
-
-  const modal = document.getElementById('book-modal');
-  newBookBtn.addEventListener('click', () => {
-    modal.showModal();
-  });
 }
 
 setupSidebar();
@@ -120,29 +112,6 @@ async function addBookToLibrary(title, author, pages, read) {
   
   return newBook;
 }
-
-const modal = document.getElementById('book-modal');
-const bookForm = document.getElementById('book-form');
-const closeModalBtn = document.getElementById('close-modal');
-
-closeModalBtn.addEventListener('click', () => {
-  modal.closest();
-  bookForm.reset();
-});
-
-bookForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const title = document.getElementById('modat-title').value;
-  const author = document.getElementById('modal-author').value;
-  const page = document.getElementById('modal-pages').value;
-  const read = document.getElementById('modal-read').value;
-
-  await addBookToLibrary(title, author, pages, read);
-
-  modal.closest();
-  bookForm.reset();
-});
 
 function createCard(book) {
   const bookCard = document.createElement('div');
@@ -261,5 +230,35 @@ async function init() {
   
   await Promise.all(initialBooks.map(b => addBookToLibrary(b.t, b.a, b.p, b.r)));
 }
+
+const modal = document.getElementById('book-modal');
+const bookForm = document.getElementById('book-form');
+const newBookBtn = document.getElementById('new-book');
+const closeModalBtn = document.getElementById('close-modal');
+
+
+newBookBtn.addEventListener('click', () => {
+  modal.showModal();
+});
+
+closeModalBtn.addEventListener('click', () => {
+  modal.close();
+  bookForm.reset();
+});
+
+
+bookForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('modal-title').value;
+  const author = document.getElementById('modal-author').value;
+  const pages = document.getElementById('modal-pages').value;
+  const read = document.getElementById('modal-read').checked;
+
+  await addBookToLibrary(title, author, pages, read);
+
+  modal.close();
+  bookForm.reset();
+});
 
 init();
