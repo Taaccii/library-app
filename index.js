@@ -42,6 +42,8 @@ async function getBookCover(title, author) {
 
 let myLibray = [];
 
+let currentFilter = 'all';
+
 function Book(title, author, pages, read, coverUrl) {
   this.id = crypto.randomUUID();
   this.title = title;
@@ -62,10 +64,24 @@ function setupSidebar() {
   unreadBtn.prepend(getIcon('bookmark'));
   document.getElementById('new-book').prepend(getIcon('add'));
 
-  homeBtn.addEventListener('click', () => filterBooks('all'));
-  readBtn.addEventListener('click', () => filterBooks('read'));
-  unreadBtn.addEventListener('click', () => filterBooks('unread'));
+  homeBtn.addEventListener('click', () => {
+    currentFilter = 'all';
+    filterBooks();
+  });
 
+  readBtn.addEventListener('click', () => {
+    currentFilter = 'read';
+    filterBooks();
+  });
+  
+  unreadBtn.addEventListener('click', () => {
+    currentFilter = 'unread';
+    filterBooks();
+  });
+
+  document.getElementById('new-book').addEventListener('click', () => {
+  
+  });
 }
 
 setupSidebar();
@@ -76,11 +92,8 @@ async function addBookToLibrary(title, author, pages, read) {
   const newBook = new Book(title, author, pages, read, coverUrl);
   myLibray.push(newBook);
   
-  const bookContainer = document.querySelector('.main-content');
-  if (bookContainer) {
-    const newCard = createCard(newBook);
-    bookContainer.appendChild(newCard);
-  }
+  filterBooks();
+  
   return newBook;
 }
 
@@ -138,6 +151,7 @@ function createCard(book) {
   toggleBtn.addEventListener('click', () => {
     book.toggleRead();
     updateStatusUI();
+    filterBooks();
   });
 
   const removeBook = document.createElement('button');
@@ -154,27 +168,25 @@ function createCard(book) {
 
     setTimeout(() => {
       myLibray = myLibray.filter(b => b.id !== book.id);
-      bookCard.remove();
+      filterBooks();
     }, 300);
   });
 
   return bookCard;
 }
 
-function filterBooks(status) {
+function filterBooks() {
   const bookContainer = document.querySelector('.main-content');
   if (!bookContainer) return;
 
   bookContainer.innerHTML = '';
 
-  let filteredArray;
-  if(status === 'read') {
-    filteredArray = myLibray.filter(book => book.read === true);
-  } else if (status === 'unread') {
-    filteredArray = myLibray.filter(book => book.read === false);
-  } else {
-    filteredArray = myLibray;
-  }
+  const filteredArray = myLibray.filter(book => {
+    if (currentFilter === 'read') return book.read === true;
+    if(currentFilter === 'unread') return book.read === false;
+    return true;
+  });
+  
 
   filteredArray.forEach(book => {
     const newCard = createCard(book);
@@ -182,16 +194,6 @@ function filterBooks(status) {
   });
 }
 
-function displayBooks() {
-  const bookContainer = document.querySelector('.main-content');
-  if (!bookContainer) return;
-  bookContainer.innerHTML = '';
-
-  myLibray.forEach(book => {
-    const newCard = createCard(book);
-    bookContainer.appendChild(newCard);
-  });
-}
 
 Book.prototype.toggleRead = function() {
   this.read = !this.read;
