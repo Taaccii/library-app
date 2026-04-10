@@ -40,7 +40,7 @@ async function getBookCover(title, author) {
 }
 
 
-let myLibray = [];
+let myLibrary = [];
 
 let currentFilter = 'all';
 
@@ -76,7 +76,7 @@ function setupSidebar() {
   homeBtn.prepend(getIcon('home'));
   readBtn.prepend(getIcon('check'));
   unreadBtn.prepend(getIcon('bookmark'));
-  document.getElementById('new-book').prepend(getIcon('add'));
+  newBookBtn.prepend(getIcon('add'));
 
   setActiveButton('home');
 
@@ -106,7 +106,7 @@ async function addBookToLibrary(title, author, pages, read) {
   const coverUrl = await getBookCover(title, author);
 
   const newBook = new Book(title, author, pages, read, coverUrl);
-  myLibray.push(newBook);
+  myLibrary.push(newBook);
   
   filterBooks();
   
@@ -167,7 +167,15 @@ function createCard(book) {
   toggleBtn.addEventListener('click', () => {
     book.toggleRead();
     updateStatusUI();
-    filterBooks();
+    
+    if(currentFilter !== 'all') {
+      bookCard.style.opacity = '0.5';
+      bookCard.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        filterBooks();
+      }, 300);
+    }
   });
 
   const removeBook = document.createElement('button');
@@ -183,7 +191,7 @@ function createCard(book) {
     bookCard.classList.add('fade-out');
 
     setTimeout(() => {
-      myLibray = myLibray.filter(b => b.id !== book.id);
+      myLibrary = myLibrary.filter(b => b.id !== book.id);
       filterBooks();
     }, 300);
   });
@@ -197,12 +205,29 @@ function filterBooks() {
 
   bookContainer.innerHTML = '';
 
-  const filteredArray = myLibray.filter(book => {
+  const filteredArray = myLibrary.filter(book => {
     if (currentFilter === 'read') return book.read === true;
     if(currentFilter === 'unread') return book.read === false;
     return true;
   });
   
+  if(filteredArray.length === 0) {
+    const emptyContainer = document.createElement('div');
+    emptyContainer.classList.add('empty-state-container');
+
+    const messageElement = document.createElement('p');
+    messageElement.classList.add('empty-state-text');
+
+    let textContent = "Your library is empty. Add your first book!";
+    if (currentFilter === 'read') textContent = "You haven't read any books yet.";
+    if (currentFilter === 'unread') textContent = "All caught up! No unread books.";
+
+    messageElement.textContent = textContent;
+
+    emptyContainer.appendChild(messageElement);
+    bookContainer.appendChild(emptyContainer);
+    return;
+  }
 
   filteredArray.forEach(book => {
     const newCard = createCard(book);
@@ -219,7 +244,7 @@ async function init() {
 
   const bookContainer = document.querySelector('.main-content');
   if (bookContainer) bookContainer.innerHTML = '';
-  myLibray = [];
+  myLibrary = [];
 
   const initialBooks = [
     { t: "Harry Potter and the Philosopher's Stone", a: "J.K. Rowling", p: 300, r: true },
@@ -252,7 +277,7 @@ bookForm.addEventListener('submit', async (e) => {
 
   const title = document.getElementById('modal-title').value;
   const author = document.getElementById('modal-author').value;
-  const pages = document.getElementById('modal-pages').value;
+  const pages = parseInt(document.getElementById('modal-pages').value);
   const read = document.getElementById('modal-read').checked;
 
   await addBookToLibrary(title, author, pages, read);
