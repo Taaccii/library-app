@@ -20,7 +20,8 @@ function getIcon(name) {
 
 async function getBookCover(title, author) {
   
-  const query = encodeURIComponent(`${title} ${author}`);
+
+  const query = encodeURIComponent(`${title} ${author} language:eng -sparknotes -cliffsnotes`);
   const url = `https://openlibrary.org/search.json?q=${query}&fields=cover_i&limit=1`;
 
   try {
@@ -28,17 +29,15 @@ async function getBookCover(title, author) {
     const data = await response.json();
 
     if (data.docs && data.docs.length > 0 && data.docs[0].cover_i) {
-      const coverId = data.docs[0].cover_i;
       
-      return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+      return `https://covers.openlibrary.org/b/id/${data.docs[0].cover_i}-L.jpg`;
     }
   } catch (error) {
-    console.error("Errore API:", error);
+    console.error("Error Open Library:", error);
   }
   
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&size=400&background=1f2937&color=fafafa`;
 }
-
 
 let myLibrary = [];
 
@@ -246,11 +245,13 @@ async function init() {
   if (bookContainer) bookContainer.innerHTML = '';
   myLibrary = [];
 
-  const initialBooks = [
-    { t: "Harry Potter and the Philosopher's Stone", a: "J.K. Rowling", p: 300, r: true },
-    { t: "1984", a: "George Orwell", p: 328, r: true },
+const initialBooks = [
+    { t: "Harry Potter and the Sorcerer's Stone", a: "J.K. Rowling", p: 309, r: true },
+    { t: "Nineteen Eighty-Four", a: "George Orwell", p: 328, r: true },
     { t: "Red Rising", a: "Pierce Brown", p: 382, r: true },
-    { t: "The Lord of the Rings", a: "Tolkien", p: 1200, r: false }
+    { t: "Dune", a: "Frank Herbert", p: 412, r: false },
+    { t: "The Great Gatsby", a: "F. Scott Fitzgerald", p: 180, r: true },
+    { t: "The Hobbit", a: "J.R.R. Tolkien", p: 310, r: false },
   ];
   
   await Promise.all(initialBooks.map(b => addBookToLibrary(b.t, b.a, b.p, b.r)));
